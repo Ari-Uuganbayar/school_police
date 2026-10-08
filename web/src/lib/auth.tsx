@@ -15,10 +15,10 @@ const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(tokenStore.get()));
 
   useEffect(() => {
-    if (!tokenStore.get()) return setLoading(false);
+    if (!tokenStore.get()) return;
     api.auth.me().then(setUser).catch(() => tokenStore.clear()).finally(() => setLoading(false));
   }, []);
 

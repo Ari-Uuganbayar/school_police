@@ -20,13 +20,15 @@ function ShiftDetail() {
   const [comment, setComment] = useState("");
   const [reviewed, setReviewed] = useState(false);
 
-  const load = useCallback(async () => {
-    const s = await api.shifts.get(shiftId);
-    setShift(s);
-    if (s.status === "completed" || s.status === "in_progress") {
-      api.payments.get(shiftId).then(setPayment).catch(() => setPayment(null));
-    }
-  }, [shiftId]);
+  const load = useCallback(
+    () => api.shifts.get(shiftId).then(s => {
+      setShift(s);
+      if (s.status === "completed" || s.status === "in_progress") {
+        api.payments.get(shiftId).then(setPayment).catch(() => setPayment(null));
+      }
+    }),
+    [shiftId],
+  );
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -102,7 +104,10 @@ function ShiftDetail() {
           ) : payment ? (
             <div className="mt-3 space-y-3 text-sm">
               <p>Дүн: <b>{fmtMNT(payment.amount)}</b> (үүнээс платформын шимтгэл {fmtMNT(payment.platform_fee)})</p>
-              {payment.qr_image && <img alt="QPay QR" className="h-48 w-48 rounded border" src={`data:image/png;base64,${payment.qr_image}`} />}
+              {payment.qr_image && (
+                // eslint-disable-next-line @next/next/no-img-element -- base64 QR, next/image хэрэггүй
+                <img alt="QPay QR" className="h-48 w-48 rounded border" src={`data:image/png;base64,${payment.qr_image}`} />
+              )}
               {deeplinks.length > 0 && (
                 <div className="flex flex-wrap gap-2">{deeplinks.map(d => <a key={d.link} href={d.link} className={btnSecondaryCls}>{d.name}</a>)}</div>
               )}

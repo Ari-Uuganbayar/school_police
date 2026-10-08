@@ -13,6 +13,7 @@ export function Nav() {
           {user ? (
             <>
               <Link href="/shifts" className="hover:underline">Ээлжүүд</Link>
+              {user.role === "admin" && <Link href="/admin" className="hover:underline">Админ</Link>}
               {user.role === "parent" && <Link href="/shifts/new" className="rounded bg-amber-500 px-3 py-1.5 font-medium text-white hover:bg-amber-600">+ Ээлж захиалах</Link>}
               <span className="text-zinc-500">{user.full_name} · {ROLE_LABEL[user.role]}</span>
               <button onClick={logout} className="text-zinc-500 hover:underline">Гарах</button>

@@ -1,4 +1,4 @@
-import type { Crossing, Payment, Shift, User } from "./types";
+import type { Crossing, Payment, School, Shift, User } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 const TOKEN_KEY = "sp_token";
@@ -28,14 +28,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch {}
     throw new ApiError(res.status, msg);
   }
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
 const get = <T>(p: string) => request<T>(p);
 const post = <T>(p: string, body?: unknown) => request<T>(p, { method: "POST", body: body ? JSON.stringify(body) : undefined });
 const patch = <T>(p: string, body: unknown) => request<T>(p, { method: "PATCH", body: JSON.stringify(body) });
+const del = (p: string) => request<void>(p, { method: "DELETE" });
 
 export interface AuthResponse { access_token: string; user: User }
+export interface SchoolInput { name: string; district?: string | null; khoroo?: string | null; address?: string | null; lat?: number | null; lng?: number | null }
+export interface CrossingInput { name: string; description?: string | null; lat: number; lng: number; checkin_radius_m: number }
 
 export const api = {
   auth: {
@@ -44,8 +48,18 @@ export const api = {
       post<AuthResponse>("/auth/register", d),
     me: () => get<User>("/auth/me"),
   },
+  schools: {
+    list: (q?: string) => get<School[]>(`/schools${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+    get: (id: number) => get<School>(`/schools/${id}`),
+    create: (d: SchoolInput) => post<School>("/schools", d),
+    update: (id: number, d: Partial<SchoolInput>) => patch<School>(`/schools/${id}`, d),
+    remove: (id: number) => del(`/schools/${id}`),
+  },
   crossings: {
     list: (school_id?: number) => get<Crossing[]>(`/crossings${school_id ? `?school_id=${school_id}` : ""}`),
+    create: (d: CrossingInput & { school_id: number }) => post<Crossing>("/crossings", d),
+    update: (id: number, d: Partial<CrossingInput>) => patch<Crossing>(`/crossings/${id}`, d),
+    remove: (id: number) => del(`/crossings/${id}`),
   },
   shifts: {
     list: (params: { mine?: boolean; status?: string } = {}) => {

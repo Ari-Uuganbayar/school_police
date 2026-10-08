@@ -64,8 +64,18 @@ class SchoolCreate(BaseModel):
     lng: float | None = None
 
 
+class SchoolUpdate(BaseModel):
+    name: str | None = None
+    district: str | None = None
+    khoroo: str | None = None
+    address: str | None = None
+    lat: float | None = None
+    lng: float | None = None
+
+
 class SchoolOut(ORM, SchoolCreate):
     id: int
+    crossing_count: int = 0
 
 
 class CrossingCreate(BaseModel):
@@ -75,6 +85,14 @@ class CrossingCreate(BaseModel):
     lat: float
     lng: float
     checkin_radius_m: int = 100
+
+
+class CrossingUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    lat: float | None = None
+    lng: float | None = None
+    checkin_radius_m: int | None = Field(default=None, ge=10, le=2000)
 
 
 class CrossingOut(ORM, CrossingCreate):

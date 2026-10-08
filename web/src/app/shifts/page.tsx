@@ -10,19 +10,20 @@ import { Alert, StatusBadge } from "@/components/ui";
 export default function ShiftsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<"open" | "mine">("open");
+  const [tabChoice, setTab] = useState<"open" | "mine" | null>(null);
+  const tab = tabChoice ?? (user?.role === "parent" ? "mine" : "open");
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [err, setErr] = useState("");
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
-    if (user) setTab(user.role === "parent" ? "mine" : "open");
   }, [user, loading, router]);
 
   useEffect(() => {
     if (!user) return;
-    setShifts(null);
-    api.shifts.list({ mine: tab === "mine" }).then(setShifts).catch(e => setErr(e.message));
+    let active = true;
+    api.shifts.list({ mine: tab === "mine" }).then(r => active && setShifts(r)).catch(e => active && setErr(e.message));
+    return () => { active = false; };
   }, [user, tab]);
 
   if (!user) return null;

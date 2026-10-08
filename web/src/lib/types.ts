@@ -28,6 +28,7 @@ export interface School {
   address: string | null;
   lat: number | null;
   lng: number | null;
+  crossing_count: number;
 }
 
 export interface Crossing {
