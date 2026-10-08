@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run build *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(npx next build *)",
+      "Bash(npx expo lint *)",
+      "Bash(npx expo export *)",
+      "Bash(npx expo-doctor *)",
+      "Bash(.venv/bin/pytest *)",
+      "Bash(.venv/bin/alembic check *)",
+      "Bash(.venv/bin/alembic current *)",
+      "Bash(.venv/bin/alembic history *)",
+      "Bash(curl -s http://localhost:8000/*)",
+      "Bash(psql schoolpolice -c *)"
+    ],
+    "deny": [
+      "Read(./backend/.env)",
+      "Read(./web/.env.local)",
+      "Read(./mobile/.env)"
+    ]
+  }
+}
