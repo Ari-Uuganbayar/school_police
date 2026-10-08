@@ -19,11 +19,13 @@ export default function ShiftDetail() {
   const [comment, setComment] = useState("");
   const [reviewed, setReviewed] = useState(false);
 
-  const load = useCallback(async () => {
-    const s = await api.shifts.get(shiftId);
-    setShift(s);
-    if (s.status === "completed") api.payments.get(shiftId).then(setPayment).catch(() => setPayment(null));
-  }, [shiftId]);
+  const load = useCallback(
+    () => api.shifts.get(shiftId).then(s => {
+      setShift(s);
+      if (s.status === "completed") api.payments.get(shiftId).then(setPayment).catch(() => setPayment(null));
+    }),
+    [shiftId],
+  );
 
   useEffect(() => { load().catch(e => setErr(e.message)); }, [load]);
 
