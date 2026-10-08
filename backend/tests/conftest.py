@@ -1,4 +1,5 @@
 """Тестийн орчин: sqlite in-memory DB, бодит FastAPI app, httpx client."""
+
 import asyncio
 from collections.abc import AsyncIterator
 

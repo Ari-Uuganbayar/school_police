@@ -4,7 +4,15 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import DB, require_role
 from app.models import Crossing, School, Shift, UserRole
-from app.schemas import CrossingCreate, CrossingOut, CrossingUpdate, SchoolCreate, SchoolListOut, SchoolOut, SchoolUpdate
+from app.schemas import (
+    CrossingCreate,
+    CrossingOut,
+    CrossingUpdate,
+    SchoolCreate,
+    SchoolListOut,
+    SchoolOut,
+    SchoolUpdate,
+)
 
 router = APIRouter(tags=["schools"])
 admin_only = Depends(require_role(UserRole.admin))
@@ -78,7 +86,9 @@ async def update_school(school_id: int, data: SchoolUpdate, db: DB):
 async def delete_school(school_id: int, db: DB):
     school = await _get_school(db, school_id)
     has_shifts = await db.scalar(
-        select(func.count(Shift.id)).join(Crossing, Shift.crossing_id == Crossing.id).where(Crossing.school_id == school_id)
+        select(func.count(Shift.id))
+        .join(Crossing, Shift.crossing_id == Crossing.id)
+        .where(Crossing.school_id == school_id)
     )
     if has_shifts:
         raise HTTPException(status.HTTP_409_CONFLICT, "Энэ сургуулийн гарцад ээлж бүртгэлтэй тул устгах боломжгүй")

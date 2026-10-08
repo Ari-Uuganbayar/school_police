@@ -2,7 +2,7 @@
 name: check
 description: Гурван аппын (backend, web, mobile) бүх статик шалгалт, тест, build-ийг нэг дор ажиллуулж, алдааг нэгтгэн тайлагнана. Код засаж дууссаны дараа, commit хийхийн өмнө ашиглана.
 argument-hint: "[backend|web|mobile] (хоосон бол бүгд)"
-allowed-tools: Bash(.venv/bin/pytest *), Bash(npx tsc *), Bash(npx eslint *), Bash(npx next build *), Bash(npx expo lint *), Bash(npx expo export *), Bash(git status *)
+allowed-tools: Bash(.venv/bin/pytest *), Bash(.venv/bin/ruff *), Bash(npx tsc *), Bash(npx eslint *), Bash(npx next build *), Bash(npx expo lint *), Bash(npx expo export *), Bash(git status *)
 ---
 
 # /check — төслийн бүх шалгалт
@@ -11,6 +11,9 @@ allowed-tools: Bash(.venv/bin/pytest *), Bash(npx tsc *), Bash(npx eslint *), Ba
 Хавтас бүрийн командыг тухайн хавтсаас нь абсолют замаар ажиллуул. Бие даасан шалгалтуудыг зэрэг (нэг мессежид олон Bash) ажиллуулж хугацаа хэмнэ.
 
 ## Backend (`backend/`)
+```bash
+.venv/bin/ruff check . && .venv/bin/ruff format --check .
+```
 ```bash
 .venv/bin/pytest -q
 ```

@@ -1,4 +1,5 @@
 """QPay v2 интеграци. Түлхүүр тохируулаагүй бол mock горимд ажиллана."""
+
 import base64
 import uuid
 from typing import Any
@@ -36,7 +37,9 @@ class QPayClient:
             r.raise_for_status()
             return r.json()
 
-    async def create_invoice(self, *, sender_invoice_no: str, amount: int, description: str, receiver_code: str) -> dict:
+    async def create_invoice(
+        self, *, sender_invoice_no: str, amount: int, description: str, receiver_code: str
+    ) -> dict:
         if not self.enabled:
             fake_id = f"mock-{uuid.uuid4().hex[:12]}"
             qr = f"MOCKQPAY|{sender_invoice_no}|{amount}"
@@ -63,7 +66,9 @@ class QPayClient:
         if not self.enabled:
             return invoice_id.startswith("mock-")  # mock горимд шалгахад шууд төлөгдсөн гэж үзнэ
         data = await self._request(
-            "POST", "/payment/check", json={"object_type": "INVOICE", "object_id": invoice_id, "offset": {"page_number": 1, "page_limit": 10}}
+            "POST",
+            "/payment/check",
+            json={"object_type": "INVOICE", "object_id": invoice_id, "offset": {"page_number": 1, "page_limit": 10}},
         )
         return any(row.get("payment_status") == "PAID" for row in data.get("rows", []))
 

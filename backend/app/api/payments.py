@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
@@ -62,7 +62,7 @@ async def check_payment(shift_id: int, db: DB, user: CurrentUser):
     if payment.status != PaymentStatus.paid and payment.provider_invoice_id:
         if await qpay.check_paid(payment.provider_invoice_id):
             payment.status = PaymentStatus.paid
-            payment.paid_at = datetime.now(timezone.utc)
+            payment.paid_at = datetime.now(UTC)
             await db.commit()
             await db.refresh(payment)
     return payment
@@ -77,6 +77,6 @@ async def qpay_callback(db: DB, payment_id: int | None = None, qpay_payment_id: 
     if payment and payment.status != PaymentStatus.paid:
         if await qpay.check_paid(payment.provider_invoice_id or ""):
             payment.status = PaymentStatus.paid
-            payment.paid_at = datetime.now(timezone.utc)
+            payment.paid_at = datetime.now(UTC)
             await db.commit()
     return {"ok": True}

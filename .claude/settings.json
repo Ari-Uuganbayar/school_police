@@ -18,12 +18,28 @@
       "Bash(.venv/bin/alembic current *)",
       "Bash(.venv/bin/alembic history *)",
       "Bash(curl -s http://localhost:8000/*)",
-      "Bash(psql schoolpolice -c *)"
+      "Bash(psql schoolpolice -c *)",
+      "Bash(.venv/bin/ruff *)"
     ],
     "deny": [
       "Read(./backend/.env)",
       "Read(./web/.env.local)",
       "Read(./mobile/.env)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint.sh",
+            "timeout": 60,
+            "statusMessage": "Lint ажиллаж байна..."
+          }
+        ]
+      }
     ]
   }
 }

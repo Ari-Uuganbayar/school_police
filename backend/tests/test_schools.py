@@ -12,7 +12,11 @@ async def make_school(client, headers, name="1-р сургууль", **extra):
 
 
 async def make_crossing(client, headers, school_id, name="Урд гарц", **extra):
-    r = await client.post("/api/crossings", json={"school_id": school_id, "name": name, "lat": 47.9, "lng": 106.9, **extra}, headers=headers)
+    r = await client.post(
+        "/api/crossings",
+        json={"school_id": school_id, "name": name, "lat": 47.9, "lng": 106.9, **extra},
+        headers=headers,
+    )
     assert r.status_code == 201, r.text
     return r.json()
 
@@ -55,10 +59,14 @@ async def test_patch_null_on_required_field_is_422(client, auth):
 async def test_radius_bounds_on_create_and_update(client, auth):
     h = await auth("admin")
     s = await make_school(client, h)
-    r = await client.post("/api/crossings", json={"school_id": s["id"], "name": "x", "lat": 1, "lng": 1, "checkin_radius_m": 0}, headers=h)
+    r = await client.post(
+        "/api/crossings", json={"school_id": s["id"], "name": "x", "lat": 1, "lng": 1, "checkin_radius_m": 0}, headers=h
+    )
     assert r.status_code == 422
     c = await make_crossing(client, h, s["id"])
-    assert (await client.patch(f"/api/crossings/{c['id']}", json={"checkin_radius_m": 5000}, headers=h)).status_code == 422
+    assert (
+        await client.patch(f"/api/crossings/{c['id']}", json={"checkin_radius_m": 5000}, headers=h)
+    ).status_code == 422
     r = await client.patch(f"/api/crossings/{c['id']}", json={"checkin_radius_m": 150}, headers=h)
     assert r.status_code == 200 and r.json()["checkin_radius_m"] == 150
 
@@ -77,7 +85,17 @@ async def test_delete_blocked_when_shifts_exist(client, auth):
     s = await make_school(client, h)
     c = await make_crossing(client, h, s["id"])
     tomorrow = (date.today() + timedelta(days=1)).isoformat()
-    r = await client.post("/api/shifts", json={"crossing_id": c["id"], "shift_date": tomorrow, "start_time": "07:30", "duration_minutes": 60, "price": 15000}, headers=await auth("parent"))
+    r = await client.post(
+        "/api/shifts",
+        json={
+            "crossing_id": c["id"],
+            "shift_date": tomorrow,
+            "start_time": "07:30",
+            "duration_minutes": 60,
+            "price": 15000,
+        },
+        headers=await auth("parent"),
+    )
     assert r.status_code == 201, r.text
     assert (await client.delete(f"/api/crossings/{c['id']}", headers=h)).status_code == 409
     assert (await client.delete(f"/api/schools/{s['id']}", headers=h)).status_code == 409

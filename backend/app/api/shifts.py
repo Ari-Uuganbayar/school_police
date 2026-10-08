@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from math import asin, cos, radians, sin, sqrt
 
 from fastapi import APIRouter, HTTPException, status
@@ -120,11 +120,9 @@ async def check_in(shift_id: int, data: CheckIn, db: DB, user: CurrentUser):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ээлжийн төлөв буруу")
     d = distance_m(data.lat, data.lng, shift.crossing.lat, shift.crossing.lng)
     if d > shift.crossing.checkin_radius_m:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, f"Гарцаас {int(d)} м зайтай байна, ойртож check-in хийнэ үү"
-        )
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Гарцаас {int(d)} м зайтай байна, ойртож check-in хийнэ үү")
     shift.status = ShiftStatus.in_progress
-    shift.checked_in_at = datetime.now(timezone.utc)
+    shift.checked_in_at = datetime.now(UTC)
     shift.checkin_lat, shift.checkin_lng = data.lat, data.lng
     await db.commit()
     return await load_shift(db, shift_id)
@@ -138,7 +136,7 @@ async def check_out(shift_id: int, db: DB, user: CurrentUser):
     if shift.status != ShiftStatus.in_progress:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ээлж эхлээгүй байна")
     shift.status = ShiftStatus.completed
-    shift.checked_out_at = datetime.now(timezone.utc)
+    shift.checked_out_at = datetime.now(UTC)
     await db.commit()
     return await load_shift(db, shift_id)
 

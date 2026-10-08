@@ -22,9 +22,7 @@ async def create_review(data: ReviewCreate, db: DB, user: CurrentUser):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Энэ ээлжид оролцоогүй")
     if to_id is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Үнэлэх хүн байхгүй")
-    dup = await db.scalar(
-        select(Review).where(Review.shift_id == shift.id, Review.from_user_id == user.id)
-    )
+    dup = await db.scalar(select(Review).where(Review.shift_id == shift.id, Review.from_user_id == user.id))
     if dup:
         raise HTTPException(status.HTTP_409_CONFLICT, "Та аль хэдийн үнэлсэн байна")
 

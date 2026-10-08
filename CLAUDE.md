@@ -28,6 +28,7 @@ Backend (venv нь `backend/.venv`, бүх командыг `backend/` дотр�
 .venv/bin/alembic revision --autogenerate -m "..."     # model өөрчилсний дараа
 .venv/bin/alembic upgrade head
 .venv/bin/python seed.py                               # тестийн хэрэглэгч, сургууль, гарц (idempotent)
+.venv/bin/ruff check --fix . && .venv/bin/ruff format .  # lint + format (ruff.toml)
 .venv/bin/pytest -q                                    # бүх тест
 .venv/bin/pytest tests/test_schools.py -k cascade      # нэг тест
 ```
@@ -49,7 +50,7 @@ npx expo install <pkg>                # npm install биш; .npmrc-д legacy-pee
 ```
 Энэ Mac дээр Xcode, Android SDK байхгүй: симулятор ажиллахгүй, mobile-ийг tsc, lint, export-оор л шалгана. Утсан дээр туршихдаа `mobile/.env`-ийн `EXPO_PUBLIC_API_URL`-ийг LAN IP болгоно.
 
-`.claude/launch.json`-д `web`, `api` preview тохиргоо байгаа.
+`.claude/launch.json`-д `web`, `api` preview тохиргоо байгаа. `.claude/hooks/lint.sh` нь Edit/Write бүрийн дараа тухайн аппын linter-ийг `--fix`-тэй ажиллуулна (web/mobile: eslint, backend: ruff check + format); үлдсэн алдаа exit 2-оор буцаж ирнэ.
 
 ## Тестийн хэрэглэгчид (seed.py)
 

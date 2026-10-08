@@ -7,21 +7,21 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
-class UserRole(str, enum.Enum):
-    parent = "parent"      # эцэг эх: ээлж захиалагч
-    worker = "worker"      # гүйцэтгэгч: хөлсөөр зогсогч
+class UserRole(enum.StrEnum):
+    parent = "parent"  # эцэг эх: ээлж захиалагч
+    worker = "worker"  # гүйцэтгэгч: хөлсөөр зогсогч
     admin = "admin"
 
 
-class ShiftStatus(str, enum.Enum):
-    open = "open"                  # нээлттэй, гүйцэтгэгч хүлээж байна
-    accepted = "accepted"          # гүйцэтгэгч авсан
-    in_progress = "in_progress"    # check-in хийсэн, явагдаж байна
-    completed = "completed"        # check-out хийсэн
+class ShiftStatus(enum.StrEnum):
+    open = "open"  # нээлттэй, гүйцэтгэгч хүлээж байна
+    accepted = "accepted"  # гүйцэтгэгч авсан
+    in_progress = "in_progress"  # check-in хийсэн, явагдаж байна
+    completed = "completed"  # check-out хийсэн
     cancelled = "cancelled"
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     pending = "pending"
     paid = "paid"
     failed = "failed"
@@ -30,9 +30,7 @@ class PaymentStatus(str, enum.Enum):
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 class User(TimestampMixin, Base):
@@ -57,8 +55,8 @@ class School(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(200), index=True)
-    district: Mapped[str | None] = mapped_column(String(100))   # дүүрэг
-    khoroo: Mapped[str | None] = mapped_column(String(50))      # хороо
+    district: Mapped[str | None] = mapped_column(String(100))  # дүүрэг
+    khoroo: Mapped[str | None] = mapped_column(String(50))  # хороо
     address: Mapped[str | None] = mapped_column(String(300))
     lat: Mapped[float | None] = mapped_column(Float)
     lng: Mapped[float | None] = mapped_column(Float)
