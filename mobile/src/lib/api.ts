@@ -15,13 +15,25 @@ export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
 
+/** FastAPI-ийн detail: string эсвэл pydantic-ийн [{loc, msg}] жагсаалт. */
+function formatDetail(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map(e => {
+      const field = Array.isArray(e.loc) ? e.loc.filter((x: unknown) => x !== "body").join(".") : "";
+      return field ? `${field}: ${e.msg}` : String(e.msg);
+    }).join("; ");
+  }
+  return JSON.stringify(detail);
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (cachedToken) headers.Authorization = `Bearer ${cachedToken}`;
   const res = await fetch(`${BASE}${path}`, { ...init, headers });
   if (!res.ok) {
     let msg = res.statusText;
-    try { const b = await res.json(); msg = typeof b.detail === "string" ? b.detail : JSON.stringify(b.detail); } catch {}
+    try { msg = formatDetail((await res.json()).detail); } catch {}
     throw new ApiError(res.status, msg);
   }
   return res.json();

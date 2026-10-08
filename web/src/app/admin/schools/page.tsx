@@ -13,7 +13,14 @@ export default function AdminSchoolsPage() {
   const [err, setErr] = useState("");
 
   const load = useCallback(() => api.schools.list(q || undefined).then(setSchools).catch(e => setErr(e.message)), [q]);
-  useEffect(() => { const t = setTimeout(load, 200); return () => clearTimeout(t); }, [load]);
+  useEffect(() => {
+    // Хайлтын хариу дарааллаа алдаж ирэхээс сэргийлнэ: зөвхөн сүүлийн q-ийн хариуг авна
+    let active = true;
+    const t = setTimeout(() => {
+      api.schools.list(q || undefined).then(r => active && setSchools(r)).catch(e => active && setErr(e.message));
+    }, 200);
+    return () => { active = false; clearTimeout(t); };
+  }, [q]);
 
   async function remove(s: School) {
     if (!confirm(`"${s.name}" сургуулийг устгах уу? Гарцууд нь хамт устана.`)) return;
@@ -49,7 +56,7 @@ export default function AdminSchoolsPage() {
                   <td className="px-4 py-2 font-medium"><Link href={`/admin/schools/${s.id}`} className="hover:underline">{s.name}</Link></td>
                   <td className="px-4 py-2">{[s.district, s.khoroo && `${s.khoroo}-р хороо`].filter(Boolean).join(", ") || "-"}</td>
                   <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">{s.address || "-"}</td>
-                  <td className="px-4 py-2 text-center">{s.crossing_count}</td>
+                  <td className="px-4 py-2 text-center">{s.crossing_count ?? 0}</td>
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     <Link href={`/admin/schools/${s.id}`} className="text-amber-600 hover:underline">Засах / гарц</Link>
                     <button onClick={() => remove(s)} className="ml-3 text-red-600 hover:underline">Устгах</button>

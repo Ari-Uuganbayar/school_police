@@ -4,21 +4,26 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Shift } from "@/lib/types";
 import { STATUS_LABEL, type ShiftStatus } from "@/lib/types";
+import { Alert } from "@/components/ui";
 
 export default function AdminHome() {
   const [stats, setStats] = useState<{ schools: number; crossings: number; shifts: Record<string, number> } | null>(null);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    Promise.all([api.schools.list(), api.crossings.list(), api.shifts.list()]).then(([schools, crossings, shifts]) => {
-      const byStatus: Record<string, number> = {};
-      (shifts as Shift[]).forEach(s => { byStatus[s.status] = (byStatus[s.status] ?? 0) + 1; });
-      setStats({ schools: schools.length, crossings: crossings.length, shifts: byStatus });
-    });
+    Promise.all([api.schools.list(), api.crossings.list(), api.shifts.list()])
+      .then(([schools, crossings, shifts]: [unknown[], unknown[], Shift[]]) => {
+        const byStatus: Record<string, number> = {};
+        shifts.forEach(s => { byStatus[s.status] = (byStatus[s.status] ?? 0) + 1; });
+        setStats({ schools: schools.length, crossings: crossings.length, shifts: byStatus });
+      })
+      .catch(e => setErr((e as Error).message));
   }, []);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Тойм</h1>
+      {err && <Alert>{err}</Alert>}
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Сургууль" value={stats?.schools} href="/admin/schools" />
         <Stat label="Гарц" value={stats?.crossings} href="/admin/schools" />

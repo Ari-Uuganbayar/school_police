@@ -19,10 +19,13 @@ export function SchoolForm({ initial, onSubmit, onCancel, submitLabel = "Хад�
   const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => setF(v => ({ ...v, [k]: e.target.value }));
 
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setErr(""); setBusy(true);
+    e.preventDefault(); setErr("");
+    const name = f.name.trim();
+    if (!name) return setErr("Сургуулийн нэр хоосон байж болохгүй");
+    setBusy(true);
     try {
       await onSubmit({
-        name: f.name.trim(),
+        name,
         district: f.district || null, khoroo: f.khoroo || null, address: f.address || null,
         lat: f.lat === "" ? null : Number(f.lat),
         lng: f.lng === "" ? null : Number(f.lng),

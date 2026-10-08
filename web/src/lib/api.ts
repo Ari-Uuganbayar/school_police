@@ -15,6 +15,18 @@ export class ApiError extends Error {
   }
 }
 
+/** FastAPI-ийн detail: string эсвэл pydantic-ийн [{loc, msg}] жагсаалт. */
+function formatDetail(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map(e => {
+      const field = Array.isArray(e.loc) ? e.loc.filter((x: unknown) => x !== "body").join(".") : "";
+      return field ? `${field}: ${e.msg}` : String(e.msg);
+    }).join("; ");
+  }
+  return JSON.stringify(detail);
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json", ...(init.headers as Record<string, string>) };
   const token = tokenStore.get();
@@ -24,7 +36,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     let msg = res.statusText;
     try {
       const body = await res.json();
-      msg = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+      msg = formatDetail(body.detail);
     } catch {}
     throw new ApiError(res.status, msg);
   }

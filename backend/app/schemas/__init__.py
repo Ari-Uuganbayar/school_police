@@ -1,6 +1,6 @@
 from datetime import date, datetime, time
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from app.models import PaymentStatus, ShiftStatus, UserRole
 
@@ -55,44 +55,70 @@ class Token(BaseModel):
 
 
 # ---------- Schools / Crossings ----------
+def _strip(v: object) -> object:
+    return v.strip() if isinstance(v, str) else v
+
+
+def _reject_null(v: object, info: ValidationInfo) -> object:
+    """Update schema-д заавал утгатай талбарт null илгээхийг хориглоно (NOT NULL багана)."""
+    if v is None:
+        raise ValueError(f"{info.field_name} хоосон байж болохгүй")
+    return v
+
+
 class SchoolCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1)
     district: str | None = None
     khoroo: str | None = None
     address: str | None = None
     lat: float | None = None
     lng: float | None = None
+
+    _strip_name = field_validator("name", mode="before")(_strip)
 
 
 class SchoolUpdate(BaseModel):
-    name: str | None = None
+    name: str | None = Field(default=None, min_length=1)
     district: str | None = None
     khoroo: str | None = None
     address: str | None = None
     lat: float | None = None
     lng: float | None = None
+
+    _strip_name = field_validator("name", mode="before")(_strip)
+    _not_null = field_validator("name")(_reject_null)
 
 
 class SchoolOut(ORM, SchoolCreate):
     id: int
-    crossing_count: int = 0
+
+
+class SchoolListOut(SchoolOut):
+    """Сургуулийн жагсаалт/дэлгэрэнгүйд гарцын тоотой."""
+
+    crossing_count: int
 
 
 class CrossingCreate(BaseModel):
     school_id: int
-    name: str
+    name: str = Field(min_length=1)
     description: str | None = None
     lat: float
     lng: float
-    checkin_radius_m: int = 100
+    checkin_radius_m: int = Field(default=100, ge=10, le=2000)
+
+    _strip_name = field_validator("name", mode="before")(_strip)
 
 
 class CrossingUpdate(BaseModel):
-    name: str | None = None
+    name: str | None = Field(default=None, min_length=1)
     description: str | None = None
     lat: float | None = None
     lng: float | None = None
     checkin_radius_m: int | None = Field(default=None, ge=10, le=2000)
+
+    _strip_name = field_validator("name", mode="before")(_strip)
+    _not_null = field_validator("name", "lat", "lng", "checkin_radius_m")(_reject_null)
 
 
 class CrossingOut(ORM, CrossingCreate):

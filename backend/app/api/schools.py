@@ -4,16 +4,14 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import DB, require_role
 from app.models import Crossing, School, Shift, UserRole
-from app.schemas import CrossingCreate, CrossingOut, CrossingUpdate, SchoolCreate, SchoolOut, SchoolUpdate
+from app.schemas import CrossingCreate, CrossingOut, CrossingUpdate, SchoolCreate, SchoolListOut, SchoolOut, SchoolUpdate
 
 router = APIRouter(tags=["schools"])
 admin_only = Depends(require_role(UserRole.admin))
 
 
-def _school_out(school: School, count: int) -> SchoolOut:
-    out = SchoolOut.model_validate(school)
-    out.crossing_count = count
-    return out
+def _school_out(school: School, count: int) -> SchoolListOut:
+    return SchoolListOut(**SchoolOut.model_validate(school).model_dump(), crossing_count=count)
 
 
 async def _get_school(db, school_id: int) -> School:
@@ -36,7 +34,7 @@ async def _get_crossing(db, crossing_id: int) -> Crossing:
 
 
 # ---------- Schools ----------
-@router.get("/schools", response_model=list[SchoolOut])
+@router.get("/schools", response_model=list[SchoolListOut])
 async def list_schools(db: DB, q: str | None = None):
     count = func.count(Crossing.id)
     stmt = (
@@ -51,14 +49,14 @@ async def list_schools(db: DB, q: str | None = None):
     return [_school_out(s, c) for s, c in rows]
 
 
-@router.get("/schools/{school_id}", response_model=SchoolOut)
+@router.get("/schools/{school_id}", response_model=SchoolListOut)
 async def get_school(school_id: int, db: DB):
     school = await _get_school(db, school_id)
     count = await db.scalar(select(func.count(Crossing.id)).where(Crossing.school_id == school_id))
     return _school_out(school, count or 0)
 
 
-@router.post("/schools", response_model=SchoolOut, status_code=201, dependencies=[admin_only])
+@router.post("/schools", response_model=SchoolListOut, status_code=201, dependencies=[admin_only])
 async def create_school(data: SchoolCreate, db: DB):
     school = School(**data.model_dump())
     db.add(school)
@@ -67,7 +65,7 @@ async def create_school(data: SchoolCreate, db: DB):
     return _school_out(school, 0)
 
 
-@router.patch("/schools/{school_id}", response_model=SchoolOut, dependencies=[admin_only])
+@router.patch("/schools/{school_id}", response_model=SchoolListOut, dependencies=[admin_only])
 async def update_school(school_id: int, data: SchoolUpdate, db: DB):
     school = await _get_school(db, school_id)
     for k, v in data.model_dump(exclude_unset=True).items():

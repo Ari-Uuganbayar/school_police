@@ -12,8 +12,10 @@ export default function ShiftsPage() {
   const router = useRouter();
   const [tabChoice, setTab] = useState<"open" | "mine" | null>(null);
   const tab = tabChoice ?? (user?.role === "parent" ? "mine" : "open");
-  const [shifts, setShifts] = useState<Shift[] | null>(null);
-  const [err, setErr] = useState("");
+  // Үр дүнг tab-аар нь хадгална: tab солиход хуучин жагсаалт, алдаа харагдахгүй
+  const [result, setResult] = useState<{ tab: string; shifts?: Shift[]; err?: string } | null>(null);
+  const shifts = result?.tab === tab ? result.shifts ?? null : null;
+  const err = result?.tab === tab ? result.err ?? "" : "";
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -22,7 +24,9 @@ export default function ShiftsPage() {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    api.shifts.list({ mine: tab === "mine" }).then(r => active && setShifts(r)).catch(e => active && setErr(e.message));
+    api.shifts.list({ mine: tab === "mine" })
+      .then(r => active && setResult({ tab, shifts: r }))
+      .catch(e => active && setResult({ tab, err: e.message }));
     return () => { active = false; };
   }, [user, tab]);
 
